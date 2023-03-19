@@ -58,3 +58,27 @@ If you found this work useful, please consider citing:
   year={2022}
 }
 ```
+
+
+# 目录结构梳理：
+- adaprune.py   # AdaPrune & global AdaPrune implementations for unstructured, blocked and N:M pruning.
+  1. 执行nm剪枝
+  2. 生成层重构数据库
+  3. 加载和评估一个profile
+
+- database.py   # Helper code for handling a the reconstruction database.
+
+
+- datautil.py   # Dataset process function.
+
+
+- modelutil.py  # Model process function.
+
+
+- spdy.py       # SPDY search & DP algorithm implementation.
+
+
+# 专有名词和文件（夹）名字：
+- profile 文件： rn18_unstr_200x.txt
+- timing 文件：  timings/rn18_unstr.txt
+- database 文件夹：rn18_unstr

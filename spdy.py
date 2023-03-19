@@ -10,7 +10,7 @@ import torch
 
 from modelutils import *
 
-
+# 定义一个Class 
 class SPDY:
 
     def __init__(
@@ -204,46 +204,56 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
 
+    # 模型的名字
     parser.add_argument(
         'model', type=str, choices=get_models,
         help='Model to work with.'
     )
+    # 数据集的名字
     parser.add_argument(
         'dataset', type=str, choices=DEFAULT_PATHS,
         help='Dataset to use.'
     )
+    # 用于存储每层且每种稀疏度对应的重构权重的数据库。
     parser.add_argument(
         'database', type=str,
         help='Database location.'
     )
+    # 记录每层时间的文件位置
     parser.add_argument(
         'timings', type=str,
         help='Timings file.'
     )
+    # 目标加速比的大小
     parser.add_argument(
         'target', type=float,
         help='Target speedup.'
     )
+    # 结果 profile 的位置。
     parser.add_argument(
         'profile', type=str,
         help='Where to save the resulting profile.'
     )
 
+    # 数据集的位置
     parser.add_argument(
         '--datapath', type=str, default='',
         help='Path to dataset.'
     )
+    # 随机的种子
     parser.add_argument(
         '--seed', type=int, default=0,
         help='Seed to use for calibration set selection.'
     )
+    # 校准数据集的样本数量
     parser.add_argument(
         '--nsamples', type=int, default=1024,
         help='Number of samples in the calibration dataset.'
     )
 
+    # 解析输入的参数
     args = parser.parse_args()
-
+    # 选择model和数据集
     get_model, test, run = get_functions(args.model)
     dataloader, testloader = get_loaders(args.dataset, noaug=True, nsamples=args.nsamples)
 
@@ -251,7 +261,7 @@ if __name__ == '__main__':
     db = UnstrDatabase(args.database, model, skip=firstlast_names(args.model))
     errors = db.get_errors()
     baselinetime, prunabletime, timings = db.get_timings(args.timings)
-
+    # 根据参数搜索合适的profile
     spdy = SPDY(
         args.target, db, errors, baselinetime, prunabletime, timings,
         get_model, run, dataloader

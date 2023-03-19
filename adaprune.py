@@ -169,79 +169,97 @@ if __name__ == '__main__':
         'dataset', type=str, choices=DEFAULT_PATHS,
         help='Dataset to use.'
     )
+    # 要执行的操作：（NM剪枝，生成数据库，加载评估profile）
     parser.add_argument(
         'mode', type=str, choices=['nmprune', 'gen', 'load'],
         help='Operation mode of the script; "nmprune" for N:M pruning, "gen" for database generation, and "load" for profile evaluation.'
     )
 
+    # 存放数据库的文件夹位置
     parser.add_argument(
         '--collect_to', type=str, default='',
         help='Folder to store database in; only used in "gen" mode.'
     )
+    # 加载层重构数据集的文件夹位置
     parser.add_argument(
         '--stitch_from', type=str, default='',
         help='Folder to load database from; only used in "load" mode.'
     )
+    # profile文件的名字
     parser.add_argument(
         '--profile', default='',
         help='Profile to load; only used in "load" mode.'
     )
+    # 是否以及在何处保存生成的检查点
     parser.add_argument(
         '--save', default='',
         help='Whether and where to save the resulting checkpoint; not used in "gen" mode.'
     )
 
+    # NM剪枝的块大小
     parser.add_argument(
         '--nmblocksize', type=int, default=4,
         help='Blocksize for N:M pruning.'
     )
+    # 块剪枝的块大小
     parser.add_argument(
         '--blocksize', type=int, default=4,
         help='Blocksize used for block pruning.'
     )
 
+    # 数据集的位置
     parser.add_argument(
         '--datapath', type=str, default='',
         help='Path to dataset.'
     )
+    # 随机种子
     parser.add_argument(
         '--seed', type=int, default=0,
         help='Seed to use for calibration set selection.'
     )
+    # 验证集采样的数量
     parser.add_argument(
         '--nsamples', type=int, default=1024,
         help='Number of samples in the calibration dataset.'
     )
 
+    # Database最小稀疏度。
     parser.add_argument(
         '--min-sparsity', type=float, default=.4,
         help='Minimum database sparsity.'
     )
+    # Database最大稀疏度。
     parser.add_argument(
         '--max-sparsity', type=float, default=.99,
         help='Maximum database sparsity.'
     )
+    # 最小和最大稀疏度之间的相等相对步数
     parser.add_argument(
         '--steps', type=int, default=40,
         help='Number of equal relative steps between min and max sparsity.'
     )
 
+    # 分层 AdaPrune 和 全局AdaPrune剪枝的批大小
     parser.add_argument(
         '--batchsize', type=int, default=32,
         help='AdaPrune and global AdaPrune batchsize.'
     )
+    # 分层 AdaPrune 的数据集传递次数
     parser.add_argument(
         '--iters_layerw', type=int, default=10,
         help='Number of dataset passes for layer-wise AdaPrune.'
     )
+    # 全局 AdaPrune 的数据集传递次数
     parser.add_argument(
         '--iters_global', type=int, default=100,
         help='Number of dataset passes for global AdaPrune.'
     )
+    # 分层Adaprune的学习率
     parser.add_argument(
         '--lr_layerw', type=float, default=1e-3,
         help='Learning rate for layer-wise AdaPrune.'
     )
+    # 全局Adaprunne的学习率
     parser.add_argument(
         '--lr_global', type=float, default=1e-5,
         help='Learning rate for global AdaPrune.'
@@ -249,6 +267,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # 加载数据集
     dataloader, testloader = get_loaders(
         args.dataset, path=args.datapath,
         nsamples=args.nsamples, seed=args.seed,

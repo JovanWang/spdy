@@ -103,12 +103,13 @@ def test_yolo(model, dataloader):
     if train:
         model.train()
 
+# 根据model名字判断，使用那个test函数
 def get_test(name):
     if 'yolo' in name:
         return test_yolo
     return test
 
-
+# 返回模型的输出
 def run(model, batch, loss=False, retmoved=False):
     dev = next(iter(model.parameters())).device
     if retmoved:
@@ -129,12 +130,13 @@ def run_yolo(model, batch, loss=False, retmoved=False):
         return model.computeloss(out, batch[1].to(dev))[0].item()
     return torch.cat([o.flatten() for o in out])
 
+# 根据模型名字是否有yolo判断使用哪个run
 def get_run(model):
     if 'yolo' in model:
         return run_yolo
     return run
 
-
+# yolo模型的调用
 def get_yolo(var):
     from yolov5.models.yolo import Model
     from yolov5.utils.downloads import attempt_download
@@ -154,6 +156,7 @@ def get_yolo(var):
 
 from torchvision.models import *
 
+# 模型来自于 torchvision.models 模块，Resnet可以直接调用，yolo需要额外处理一下。
 get_models = {
     'rn18': lambda: resnet18(pretrained=True),
     'rn34': lambda: resnet34(pretrained=True),
@@ -164,17 +167,18 @@ get_models = {
     'yolov5m': lambda: get_yolo('yolov5m')
 }
 
+# 从一个预定好的list中返回对以ing的模型类，并移到GPU上，并切换成评估模式。
 def get_model(model):
     model = get_models[model]()
     model = model.to(DEV)
     model.eval()
     return model
 
-
+# 由adaprune.py文件调用，根据model名字，返回一组值model类，test，run
 def get_functions(model):
     return lambda: get_model(model), get_test(model), get_run(model)
 
-
+# 
 def firstlast_names(model):
     if 'rn' in model:
         return ['conv1', 'fc']
