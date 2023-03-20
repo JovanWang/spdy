@@ -78,7 +78,8 @@ def get_coco(path, batchsize):
 
 
 DEFAULT_PATHS = {
-    'imagenet': ['../imagenet'],
+    # 'imagenet': ['../imagenet'],
+    'imagenet': ['../data/tiny-imagenet-200'],
     'coco': ['../coco']
 }
 

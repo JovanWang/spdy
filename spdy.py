@@ -12,7 +12,7 @@ from modelutils import *
 
 # 定义一个Class 
 class SPDY:
-
+    # 初始化spdy类
     def __init__(
         self,
         target, db, errors, baselinetime, prunabletime, timings,
@@ -27,29 +27,39 @@ class SPDY:
         self.modelp = get_model()
         self.layersp = find_layers(self.modelp)
 
+        # 返回网上下载的模型的预测结果
         self.batches = []
         for batch in dataloader:
             self.batches.append(run(self.modelp, batch, retmoved=True))
 
         self.layers = list(db.layers())
         self.layers = [l for l in self.layers if l not in skip_layers]
+        # 各种稀疏度等级
         self.sparsities = [list(errors[self.layers[l]].keys()) for l in range(len(self.layers))]
+        # 稀疏度在所有稀疏等级中排序的平方
         self.costs = [
             [errors[self.layers[l]][s] for s in self.sparsities[l]] for l in range(len(self.layers))
         ]
+        # 每层的时间
         self.timings = [
             [timings[self.layers[l]][s] for s in self.sparsities[l]] for l in range(len(self.layers))
         ]
 
         self.baselinetime = baselinetime
         self.prunabletime = prunabletime
+        # 目标时间是基础时间的加速比分之一倍，减去通过剪枝可节省的时间（不可节省的时间指的是第一层最后一层，以及其他没有参数的时间）
         targettime = self.baselinetime / self.target - (self.baselinetime - self.prunabletime)
+        # 每层中最小的时间总和
         best = sum(min(c) for c in self.timings)
+        # 通过最好的时间计算最佳加速比
         if self.prunabletime < self.baselinetime:
             print('Max target:', self.baselinetime / (best + self.baselinetime - self.prunabletime))
+        # 每个桶的大小 设置为目标时间除以桶的数量
         self.bucketsize = targettime / self.dpbuckets
 
+        # 遍历所有层的时间（这是用来作什么的？）
         for row in self.timings:
+            # 遍历所有稀疏度的时间
             for i in range(len(row)):
                 row[i] = int(round(row[i] / self.bucketsize))
 
@@ -107,6 +117,7 @@ class SPDY:
         self.db.stitch(layers, config)
         return model
 
+    # 返回该批的loss值大小
     @torch.no_grad()
     def get_loss(self, model):
         loss = 0
@@ -158,6 +169,7 @@ class SPDY:
         if save:
             self.save_profile(coefs, save)
 
+    # 寻找合适的profile
     def search(
         self, save='', randinits=100, maxnoimp=100, layerperc=.1
     ):
@@ -257,8 +269,11 @@ if __name__ == '__main__':
     get_model, test, run = get_functions(args.model)
     dataloader, testloader = get_loaders(args.dataset, noaug=True, nsamples=args.nsamples)
 
+    # 初始化模型和数据库
     model = get_model()
     db = UnstrDatabase(args.database, model, skip=firstlast_names(args.model))
+
+    # errors只有稀疏度相关，与具体权值无关
     errors = db.get_errors()
     baselinetime, prunabletime, timings = db.get_timings(args.timings)
     # 根据参数搜索合适的profile

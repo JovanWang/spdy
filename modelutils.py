@@ -33,7 +33,7 @@ def test(model, dataloader):
         ys.append(y.to(dev))
     acc = torch.mean((torch.cat(preds) == torch.cat(ys)).float()).item()
     acc *= 100
-    print('%.2f' % acc)
+    print('acc: %.2f' % acc)
     if train:
         model.train()
 
@@ -109,7 +109,7 @@ def get_test(name):
         return test_yolo
     return test
 
-# 返回模型的输出
+# 执行一个batch的模型计算
 def run(model, batch, loss=False, retmoved=False):
     dev = next(iter(model.parameters())).device
     if retmoved:
@@ -158,11 +158,12 @@ from torchvision.models import *
 
 # 模型来自于 torchvision.models 模块，Resnet可以直接调用，yolo需要额外处理一下。
 get_models = {
-    'rn18': lambda: resnet18(pretrained=True),
-    'rn34': lambda: resnet34(pretrained=True),
-    'rn50': lambda: resnet50(pretrained=True),
-    'rn101': lambda: resnet101(pretrained=True),
-    '2rn50': lambda: wide_resnet50_2(pretrained=True),
+    # 'rn18': lambda: resnet18(pretrained=True),
+    'rn18': lambda: resnet18(weights=ResNet18_Weights.DEFAULT),
+    'rn34': lambda: resnet34(weights=ResNet34_Weights.DEFAULT),
+    'rn50': lambda: resnet50(weights=ResNet50_Weights.DEFAULT),
+    'rn101': lambda: resnet101(weights=ResNet101_Weights.DEFAULT),
+    '2rn50': lambda: wide_resnet50_2(weights=Wide_ResNet50_2_Weights.DEFAULT),
     'yolov5s': lambda: get_yolo('yolov5s'),
     'yolov5m': lambda: get_yolo('yolov5m')
 }
@@ -178,7 +179,7 @@ def get_model(model):
 def get_functions(model):
     return lambda: get_model(model), get_test(model), get_run(model)
 
-# 
+# 返回模型的最开始的层的名字 和 最后一层的层名字
 def firstlast_names(model):
     if 'rn' in model:
         return ['conv1', 'fc']

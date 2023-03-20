@@ -82,3 +82,29 @@ If you found this work useful, please consider citing:
 - profile 文件： rn18_unstr_200x.txt
 - timing 文件：  timings/rn18_unstr.txt
 - database 文件夹：rn18_unstr
+
+
+# 整理实现的功能
+### 2:4 AdaPrune + global AdaPrune
+python adaprune.py rn18 imagenet nmprune --datapath ${DATAPATH}
+```
+对下载后的模型进行剪枝。
+1、下载模型。
+2、根据模型初始化两个相同的层参数，一个用于做修剪后的结果，一个用来计算原始模型结果。
+3、根据每层的损失值来更新修剪后的参数。
+4、最后再根据一次全局修剪得到最后的参数。
+```
+
+### Generate unstr database
+python adaprune.py rn18 imagenet gen --collect_to rn18_unstr --datapath ${DATAPATH}
+```
+定义最大稀疏度和最小稀疏度，然后将剪枝后的模型保存下来。
+每种稀疏度为一个文件，文件中记录了该稀疏度下每层的权重矩阵。
+```
+
+### Load and evaluate profile & run global AdaPrune
+python adaprune.py rn18 imagenet load --stitch_from rn18_unstr --profile rn18_unstr_200x.txt --datapath ${DATAPATH}
+```
+加载profile到模型中，在数据库中找到每层对应的权重，然后执行计算结果。
+
+```
