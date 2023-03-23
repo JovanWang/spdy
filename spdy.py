@@ -34,7 +34,7 @@ class SPDY:
 
         self.layers = list(db.layers())
         self.layers = [l for l in self.layers if l not in skip_layers]
-        # 各种稀疏度等级
+        # 每层都有各种稀疏度等级
         self.sparsities = [list(errors[self.layers[l]].keys()) for l in range(len(self.layers))]
         # 稀疏度在所有稀疏等级中排序的平方
         self.costs = [
@@ -102,6 +102,7 @@ class SPDY:
         solution.reverse()
         return solution
 
+    # 计算带有灵敏度的cost
     def gen_costs(self, coefs):
         return [
             [self.costs[i][j] * coefs[i] for j in range(len(self.costs[i]))] \
@@ -111,13 +112,14 @@ class SPDY:
     def stitch_model(self, solution):
         model = copy.deepcopy(self.modelp)
         layers = find_layers(model)
+        # 每层layer，对应第几个稀疏度等级
         config = {
             self.layers[i]: self.sparsities[i][solution[i]] for i in range(len(self.layers))
         }
         self.db.stitch(layers, config)
         return model
 
-    # 返回该批的loss值大小
+    # 运行模型，返回loss的平均值
     @torch.no_grad()
     def get_loss(self, model):
         loss = 0
@@ -125,8 +127,10 @@ class SPDY:
             loss += self.run(model, batch, loss=True)
         return loss / len(self.batches) 
 
+    # 通过灵敏度向量，执行DP，得到solution，通过solution拼接模型，用于计算loss
     def get_score(self, coefs):
         costs = self.gen_costs(coefs)
+        # solution 表示每个层的稀疏度等级
         solution = self.dp(costs)
         model = self.stitch_model(solution)
         return self.get_loss(model)
@@ -175,13 +179,16 @@ class SPDY:
     ):
         evals = 0
         print('Finding init ...')
+        # 灵敏度向量c
         coefs = None
         score = float('inf')
         for _ in range(randinits):
+            # 随机初始化灵敏度向量
             coefs1 = np.random.uniform(0, 1, size=len(self.layers))
             score1 = self.get_score(coefs1)
             evals += 1
             print('%04d  %.4f %.4f' % (evals, score, score1))
+            # 如果分数越小，则替换灵敏度向量
             if score1 < score:
                 score = score1
                 coefs = coefs1
@@ -265,7 +272,7 @@ if __name__ == '__main__':
 
     # 解析输入的参数
     args = parser.parse_args()
-    # 选择model和数据集
+    # 选择model（最原始的）和数据集
     get_model, test, run = get_functions(args.model)
     dataloader, testloader = get_loaders(args.dataset, noaug=True, nsamples=args.nsamples)
 

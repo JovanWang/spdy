@@ -60,7 +60,7 @@ class UnstrDatabase:
         errors = {}
         for name in self.db:
             errors[name] = {}
-            # 稀疏度从小到大排序，稀疏度越小，越越前；则i更小，error更小
+            # 稀疏度从小到大排序，稀疏度越小，排名越前；则i更小，error更小
             for i, s in enumerate(sorted(self.db[name])):
                 # i 是稀疏度排在所有稀疏度里大小的第几位。s是稀疏度值本身
                 errors[name][s] = (i / (len(self.db[name])- 1)) ** 2

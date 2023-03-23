@@ -164,7 +164,7 @@ def global_adaprune(
     for i in range(iters):
         cumloss = 0
         for batch in dataloader:
-            # 原始的不带梯度，更新后的带梯度进行run。
+            # 原始的不带梯度，更新后的带梯度进行run,run的目的是给hook记录数据提供启动。
             with torch.no_grad():
                 run(modeld, batch)
             run(modelp, batch)
