@@ -371,7 +371,7 @@ if __name__ == '__main__':
         delta = ((1 - args.max_sparsity) / density) ** (1 / args.steps)
         # 遍历每一个稀疏度的Step
         for _ in range(args.steps + 1):
-            print('%.4f' % (1 - density))
+            print('sparsity: %.4f' % (1 - density))
             # 遍历每个层，块大小大于1用块剪枝，小于1，则用原始剪枝。裁剪比例用 1 - density 控制
             for name in params:
                 if args.blocksize > 1:
